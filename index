@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdClick - ক্লিক করে আয় করুন</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        .ad-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .ad-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .ad-card.clicked {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .cooldown-timer {
+            background-color: #FFEDD5;
+            color: #C2410C;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-card {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.03);
+        }
+        
+        .btn-primary {
+            @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300;
+        }
+        
+        .btn-success {
+            @apply bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300;
+        }
+        
+        .btn-warning {
+            @apply bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition duration-300;
+        }
+        
+        .btn-danger {
+            @apply bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300;
+        }
+        
+        .btn-disabled {
+            @apply bg-gray-400 text-white font-bold py-2 px-4 rounded cursor-not-allowed;
+        }
+        
+        .header-nav {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar {
+            height: calc(100vh - 64px);
+            position: sticky;
+            top: 64px;
+            overflow-y: auto;
+        }
+        
+        .sidebar-link {
+            @apply flex items-center py-3 px-4 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded transition duration-200;
+        }
+        
+        .sidebar-link.active {
+            @apply bg-blue-50 text-blue-600 font-semibold;
+        }
+        
+        /* For animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-in-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Progress bar styling */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            background-color: #3B82F6;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+            }
+            
+            .mobile-menu {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+                z-index: 10;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header Navigation -->
+    <header class="header-nav sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="#home" class="text-2xl font-bold text-blue-600 flex items-center space-x-2" onclick="showPage('home')">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>AdClick</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#home" class="text-gray-700 hover:text-blue-600 transition duration-300" onclick="showPage('home')">হোম</a>
+                    <a href="#ads" class="text-gray-700 hover:text-blue-600 transition duration-300" onclick="showPage('ads')">এডস</a>
+                    <a href="#how-it-works" class="text-gray-700 hover:text-blue-600 transition duration-300" onclick="showPage('how-it-works')">কিভাবে কাজ করে</a>
+                    <a href="#faq" class="text-gray-700 hover:text-blue-600 transition duration-300" onclick="showPage('faq')">সাধারণ জিজ্ঞাসা</a>
+                    <a href="#about" class="text-gray-700 hover:text-blue-600 transition duration-300" onclick="showPage('about')">আমাদের সম্পর্কে</a>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <div id="logged-out-buttons">
+                        <button onclick="showPage('login')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition duration-300">
+                            লগইন / রেজিস্ট্রেশন
+                        </button>
+                    </div>
+                    
+                    <div id="logged-in-buttons" class="hidden">
+                        <div class="flex items-center space-x-3">
+                            <a href="#dashboard" onclick="showPage('dashboard')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition duration-300">
+                                ড্যাশবোর্ড
+                            </a>
+                            <div class="relative">
+                                <button id="profile-dropdown-button" class="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition duration-300">
+                                    <img src="https://cdn.jsdelivr.net/gh/horizon-ui/horizon-tailwind-react-ts-corporate@main/src/assets/img/avatars/avatar4.png" class="h-8 w-8 rounded-full">
+                                    <span class="font-medium text-gray-700 pr-2">রহিম</span>
+                                </button>
+                                
+                                <div id="profile-dropdown" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden">
+                                    <div class="py-1">
+                                        <a href="#profile" onclick="showPage('profile')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">প্রোফাইল</a>
+                                        <a href="#settings" onclick="showPage('settings')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">সেটিংস</a>
+                                        <a href="#withdraw" onclick="showPage('withdraw')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">উইথড্র</a>
+                                        <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">লগআউট</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="mobile-menu-button" class="md:hidden text-gray-600 hover:text-blue-600 transition duration-300">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="md:hidden mt-4 hidden">
+                <div class="flex flex-col space-y-2">
+                    <a href="#home" class="text-gray-700 hover:text-blue-600 py-2 transition duration-300" onclick="showPage('home')">হোম</a>
+                    <a href="#ads" class="text-gray-700 hover:text-blue-600 py-2 transition duration-300" onclick="showPage('ads')">এডস</a>
+                    <a href="#how-it-works" class="text-gray-700 hover:text-blue-600 py-2 transition duration-300" onclick="showPage('how-it-works')">কিভাবে কাজ করে</a>
+                    <a href="#faq" class="text-gray-700 hover:text-blue-600 py-2 transition duration-300" onclick="showPage('faq')">সাধারণ জিজ্ঞাসা</a>
+                    <a href="#about" class="text-gray-700 hover:text-blue-600 py-2 transition duration-300" onclick="showPage('about')">আমাদের সম্পর্কে</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Content Container -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Home Page -->
+        <section id="home" class="page-section active fade-in">
+            <!-- Hero Section -->
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-8 md:p-12 mb-10 text-white">
+                <div class="md:flex items-center">
+                    <div class="md:w-1/2 mb-8 md:mb-0">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4">এড ক্লিক করে আয় করুন</h1>
+                        <p class="text-xl mb-6">প্রতিদিন বিভিন্ন এডে ক্লিক করে সহজেই আয় করুন। জিরো ইনভেস্টমেন্ট, যেকোনো সময় উইথড্র করতে পারবেন।</p>
+                        <div class="flex space-x-4">
+                            <a href="#ads" onclick="showPage('ads')" class="bg-white text-blue-600 font-bold py-3 px-6 rounded-lg hover:bg-blue-50 transition duration-300">
+                                শুরু করুন
+                            </a>
+                            <a href="#how-it-works" onclick="showPage('how-it-works')" class="bg-transparent border-2 border-white text-white font-bold py-3 px-6 rounded-lg hover:bg-white hover:text-blue-600 transition duration-300">
+                                আরও জানুন
+                            </a>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 flex justify-center">
+                        <img src="https://cdn.jsdelivr.net/gh/horizon-ui/horizon-tailwind-react-ts-corporate@main/src/assets/img/avatars/banner.png" alt="Hero Image" class="max-h-72">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features Section -->
+            <div class="mb-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">আমাদের প্ল্যাটফর্মের বৈশিষ্ট্য</h2>
+                    <p class="text-lg text-gray-600">আমাদের প্ল্যাটফর্মে যে সুবিধাগুলো পাবেন</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+                        <div class="w-12 h-12 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mb-4">
+                            <i class="fas fa-mouse-pointer text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">সহজ আয়</h3>
+                        <p class="text-gray-600">প্রতিদিন বিভিন্ন এডে ক্লিক করে সহজেই আয় করুন। প্রতি ক্লিকে ০.২০ টাকা করে আয় করুন।</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+                        <div class="w-12 h-12 flex items-center justify-center bg-green-100 text-green-600 rounded-full mb-4">
+                            <i class="fas fa-wallet text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">দ্রুত পেমেন্ট</h3>
+                        <p class="text-gray-600">বিকাশ, নগদ এবং বাইনান্স এর মাধ্যমে সহজেই টাকা উইথড্র করুন। মাসে দুইবার উইথড্র করতে পারবেন।</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+                        <div class="w-12 h-12 flex items-center justify-center bg-purple-100 text-purple-600 rounded-full mb-4">
+                            <i class="fas fa-infinity text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">অসীম এড</h3>
+                        <p class="text-gray-600">আমাদের প্ল্যাটফর্মে প্রতিদিন নতুন নতুন অসংখ্য এড যোগ করা হয়, যাতে আপনি সর্বাধিক আয় করতে পারেন।</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- How It Works Section -->
+            <div class="mb-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">কিভাবে কাজ করে</h2>
+                    <p class="text-lg text-gray-600">এই প্ল্যাটফর্মে আয় করার সহজ ৪টি ধাপ</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                        <div class="w-16 h-16 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mx-auto mb-4">
+                            <div class="text-2xl font-bold">1</div>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">রেজিস্ট্রেশন করুন</h3>
+                        <p class="text-gray-600">সহজে রেজিস্ট্রেশন করুন অথবা গুগল অ্যাকাউন্ট দিয়ে সাইন আপ করুন।</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                        <div class="w-16 h-16 flex items-center justify-center bg-green-100 text-green-600 rounded-full mx-auto mb-4">
+                            <div class="text-2xl font-bold">2</div>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">এডে ক্লিক করুন</h3>
+                        <p class="text-gray-600">আমাদের প্ল্যাটফর্মে থাকা বিভিন্ন এডগুলোতে ক্লিক করুন।</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                        <div class="w-16 h-16 flex items-center justify-center bg-purple-100 text-purple-600 rounded-full mx-auto mb-4">
+                            <div class="text-2xl font-bold">3</div>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">আয় জমা হবে</h3>
+                        <p class="text-gray-600">প্রতিটি ক্লিকের জন্য আপনার অ্যাকাউন্টে টাকা জমা হবে।</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                        <div class="w-16 h-16 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full mx-auto mb-4">
+                            <div class="text-2xl font-bold">4</div>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">টাকা উইথড্র করুন</h3>
+                        <p class="text-gray-600">আপনার পছন্দের পেমেন্ট মেথড দিয়ে টাকা উইথড্র করুন।</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Section -->
+            <div class="bg-blue-50 rounded-xl p-8 mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">আমাদের সাফল্য</h2>
+                    <p class="text-lg text-gray-600">আমাদের প্ল্যাটফর্মের মাধ্যমে হাজার হাজার ব্যবহারকারী সফলভাবে আয় করছেন</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center hover:transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-blue-600 mb-2">১০,০০০+</div>
+                        <p class="text-gray-600">সক্রিয় ব্যবহারকারী</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center hover:transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-green-600 mb-2">৳৫০,০০,০০০+</div>
+                        <p class="text-gray-600">মোট পেমেন্ট</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center hover:transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-purple-600 mb-2">১,০০০+</div>
+                        <p class="text-gray-600">দৈনিক এড</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center hover:transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-yellow-600 mb-2">১০০%</div>
+                        <p class="text-gray-600">সন্তুষ্ট ব্যবহারকারী</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testimonials Section -->
+            <div class="mb-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">ব্যবহারকারীদের মতামত</h2>
+                    <p class="text-lg text-gray-600">আমাদের সফল ব্যবহারকারীদের কিছু মতামত</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="flex items-center mb-4">
+                            <img src="https://cdn.jsdelivr.net/gh/horizon-ui/horizon-tailwind-react-ts-corporate@main/src/assets/img/avatars/avatar1.png" alt="User" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 class="font-semibold">করিম আহমেদ</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600">"এই প্ল্যাটফর্ম আমার জীবন বদলে দিয়েছে। প্রতিদিন কিছু সময় এডে ক্লিক করে আমি মাসে ৫,০০০ টাকা পর্যন্ত আয় করি। পেমেন্টও খুব দ্রুত পাই।"</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="flex items-center mb-4">
+                            <img src="https://cdn.jsdelivr.net/gh/horizon-ui/horizon-tailwind-react-ts-corporate@main/src/assets/img/avatars/avatar2.png" alt="User"
